@@ -1,0 +1,49 @@
+name: Update Kuaimiao Proxy Config
+
+on:
+  workflow_dispatch: # 允許手動觸發
+  schedule:
+    # 每天 UTC 時間 00:00 (北京時間早上 8 點) 運行
+    # 你可以修改 '0 0 * * *' 來調整運行時間
+    - cron: '0 0 * * *' 
+
+jobs:
+  update-config:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    - name: Run script to get and save config
+      env:
+        # 設定 CONFIG_FILE_PATH 環境變數，讓 Python 腳本知道儲存路徑
+        CONFIG_FILE_PATH: proxies/kuaimiao_config.yaml
+      run: |
+        python get_kuaimiao_config.py
+
+    - name: Commit and push changes
+      # 只有當有變更時才提交
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add ${{ env.CONFIG_FILE_PATH }}
+        
+        # 檢查是否有實際的檔案變更
+        if git diff --staged --quiet; then
+          echo "No changes to commit."
+        else
+          git commit -m "chore(kuaimiao): update proxy config"
+          git push
+        fi
+      # 這裡的 GITHUB_TOKEN 會由 GitHub Actions 自動提供寫入權限
