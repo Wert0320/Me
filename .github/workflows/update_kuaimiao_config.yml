@@ -1,7 +1,3 @@
-#### 第二步：創建 `.github/workflows/update_kuaimiao_config.yml` 檔案
-
-**檔案內容：**
-```yaml
 name: Update Kuaimiao Proxy Config
 
 on:
@@ -37,17 +33,20 @@ jobs:
         python get_kuaimiao_config.py
 
     - name: Commit and push changes
-      # 只有當有變更時才提交
       run: |
+        # 確保 Git identity 已設定
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        # Add the changes
         git add ${{ env.CONFIG_FILE_PATH }}
         
-        # 檢查是否有實際的檔案變更
-        if git diff --staged --quiet; then
-          echo "No changes to commit."
-        else
+        # Check if there are any changes staged
+        if ! git diff --staged --quiet; then
+          # Commit and push only if there are changes
           git commit -m "chore(kuaimiao): update proxy config"
           git push
+        else
+          echo "No changes to commit."
         fi
-      # 這裡的 GITHUB_TOKEN 會由 GitHub Actions 自動提供寫入權限
+      # GITHUB_TOKEN is automatically provided by GitHub Actions for write permissions
