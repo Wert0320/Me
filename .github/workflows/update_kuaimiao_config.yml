@@ -1,3 +1,8 @@
+
+#### 第二步：創建 `.github/workflows/update_kuaimiao_config.yml` 檔案
+
+**檔案內容：**
+```yaml
 name: Update Kuaimiao Proxy Config
 
 on:
